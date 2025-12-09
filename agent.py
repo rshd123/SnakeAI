@@ -3,7 +3,9 @@ import random
 import numpy as np
 from env import SnakeGameAI, Direction, Point
 from collections import deque 
-
+from helper import plot
+from model import Linear_QNet, QTrainer
+from env import SnakeGameAI, Direction, Point
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
@@ -12,10 +14,10 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0  # randomness
-        self.gamma = 0  # discount rate
+        self.gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
-        self.model = None  # Placeholder for the neural network model
-        self.trainer = None
+        self.model = Linear_QNet(11, 256, 3)  # 11 input features, 256 hidden neurons, 3 output actions
+        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
@@ -128,6 +130,12 @@ def train():
                 #agent.model.save()
 
             print('Game:', agent.n_games, 'Score:', score, 'Record:', record)
-             
+            
+            plot_scores.append(score)
+            total_score += score
+            mean_score = total_score / agent.n_games
+            plot_mean_scores.append(mean_score)
+            plot(plot_scores, plot_mean_scores)
+
 if __name__ == '__main__':
     train() 
